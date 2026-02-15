@@ -1,0 +1,29 @@
+{
+  "base_url": "https://elpais.com/opinion/",
+  "num_articles": 5,
+  "images_directory": "article_images",
+  "translation": {
+    "source_language": "es",
+    "target_language": "en"
+  },
+  "word_frequency": {
+    "minimum_occurrences": 2,
+    "stop_words": [
+      "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
+      "of", "with", "by", "from", "as", "is", "was", "are", "be", "been",
+      "has", "have", "had", "will", "would", "could", "should", "may", "might"
+    ]
+  },
+  "selenium": {
+    "implicit_wait": 10,
+    "page_load_timeout": 30,
+    "script_timeout": 30
+  },
+  "browserstack": {
+    "project_name": "El Pais Scraper",
+    "build_name": "v1.0",
+    "debug": true,
+    "console_logs": true,
+    "network_logs": true
+  }
+}
