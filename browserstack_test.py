@@ -51,22 +51,39 @@ BROWSER_CONFIGS = [
 
 
 def create_browserstack_driver(config):
-    desired_cap = {
-        'browserstack.user': BROWSERSTACK_USERNAME,
-        'browserstack.key': BROWSERSTACK_ACCESS_KEY,
-        'project': 'El Pais Scraper',
-        'build': 'v1.0',
-        'name': config.get('name', 'Test'),
-        'browserstack.debug': 'true',
-        'browserstack.console': 'verbose',
-        'browserstack.networkLogs': 'true'
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    
+    options = ChromeOptions()
+    
+    # BrowserStack specific options
+    bstack_options = {
+        'userName': BROWSERSTACK_USERNAME,
+        'accessKey': BROWSERSTACK_ACCESS_KEY,
+        'projectName': 'El Pais Scraper',
+        'buildName': 'v1.0',
+        'sessionName': config.get('name', 'Test'),
+        'debug': 'true',
+        'consoleLogs': 'verbose',
+        'networkLogs': 'true'
     }
     
-    desired_cap.update(config)
+    # Add OS and browser configuration
+    if 'os' in config:
+        bstack_options['os'] = config['os']
+        bstack_options['osVersion'] = config.get('os_version', '')
+    if 'device' in config:
+        bstack_options['deviceName'] = config['device']
+        bstack_options['osVersion'] = config.get('os_version', '')
+        bstack_options['realMobile'] = config.get('real_mobile', 'true')
+    if 'browser' in config:
+        bstack_options['browserName'] = config['browser']
+        bstack_options['browserVersion'] = config.get('browser_version', 'latest')
+    
+    options.set_capability('bstack:options', bstack_options)
     
     driver = webdriver.Remote(
         command_executor=BROWSERSTACK_URL,
-        desired_capabilities=desired_cap
+        options=options
     )
     
     return driver
@@ -101,11 +118,11 @@ def run_test_on_browser(config):
         translated_headers = scraper.translate_headers()
         scraper.analyze_word_frequency(translated_headers)
         
-        print(f"✓ Test completed on {config.get('name')}: {test_result['status']}")
+        print(f"[PASS] Test completed on {config.get('name')}: {test_result['status']}")
         
     except Exception as e:
         test_result['error'] = str(e)
-        print(f"✗ Test failed on {config.get('name')}: {e}")
+        print(f"[FAIL] Test failed on {config.get('name')}: {e}")
     
     finally:
         if driver:
@@ -153,7 +170,7 @@ def run_parallel_tests():
     partial = sum(1 for r in results if r['status'] == 'Partial')
     
     for result in results:
-        status_symbol = "✓" if result['status'] == 'Passed' else "✗"
+        status_symbol = "[PASS]" if result['status'] == 'Passed' else "[FAIL]"
         print(f"\n{status_symbol} {result['browser']}")
         print(f"  Status: {result['status']}")
         print(f"  Articles Scraped: {result['articles_scraped']}")
@@ -174,7 +191,7 @@ def run_parallel_tests():
 
 def main():
     if BROWSERSTACK_USERNAME == 'your_username' or BROWSERSTACK_ACCESS_KEY == 'your_access_key':
-        print("\n⚠ WARNING: Please set BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY environment variables")
+        print("\nWARNING: Please set BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY environment variables")
         print("\nExample:")
         print("  export BROWSERSTACK_USERNAME='your_username'")
         print("  export BROWSERSTACK_ACCESS_KEY='your_access_key'")
