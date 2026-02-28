@@ -25,7 +25,7 @@ class ElPaisScraper:
         print("Navigating to El País Opinion section...")
         self.driver.get(self.base_url)
         
-        time.sleep(5)
+        time.sleep(3)
         
         try:
             cookie_button = WebDriverWait(self.driver, 5).until(
